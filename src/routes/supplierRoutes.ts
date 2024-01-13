@@ -1,14 +1,48 @@
-import express from 'express';
-app.post("/", async (req: Request, res: Response) => {
-    try {
-        const { fullname, e_mail, password, profile_pic } = req.body;
+import express, { Request, Response, Router } from "express";
+import sequelize from "../config/sequelize-config";
+import EcSuppliers from "../models/ec_suppliers";
+import supplierRegistration from "../controllers/supplierControllers/supplierRegistration";
+import { getSupplier } from "../controllers/supplierControllers/supplierRegistration";
+import supplierProfile from "../controllers/supplierControllers/supplierProfile";
+import { verifyToken } from "../middleware/verifyJwt";
+import multer from "multer";
 
-        await EcSuppliers.create({ fullname, e_mail, password, profile_pic: Buffer.from(profile_pic), }, { raw: false });
+import { addProduct } from "../controllers/products/addproduct";
+import { updateProduct } from "../controllers/products/editproduct";
+import { getProduct } from "../controllers/products/getproduct";
 
-        res.status(200).json({ message: "Successfully inserted data in the table." })
-    }
-    catch (error: any) {
-        console.log(error);
-        res.status(500).json({ error: error.toString() });//internal server error
-    }
-  })
+
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
+
+
+ //importing from controllers
+const supplierRouter = express.Router();
+supplierRouter.get("/get", async (req: Request, res: Response) => {
+  getSupplier(req,res); 
+  });
+
+  //importing from controllers
+  supplierRouter.post("/register", upload.single("profile_pic"), async (req: Request, res: Response) => {
+    supplierRegistration(req,res);
+  });
+
+  supplierRouter.post("/getProfile",verifyToken , (req: Request, res: Response) => {
+    supplierProfile(req,res);
+   });
+
+   //--------------------PRODUCT------------------------------------------
+  supplierRouter.post("/addProduct",verifyToken, async (req: Request, res: Response) => {
+    addProduct(req,res);
+  }
+  );
+
+supplierRouter.patch("/editProduct",verifyToken,async(req:Request,res:Response)=>{
+  updateProduct(req,res);
+})
+
+supplierRouter.get("/getProduct",verifyToken,async(req:Request,res:Response)=>{
+  getProduct(req,res);
+})
+
+  export default supplierRouter;

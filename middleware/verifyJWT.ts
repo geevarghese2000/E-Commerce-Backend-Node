@@ -1,31 +1,28 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-
-export const verifyToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // Get the Bearer token from the request headers
-  const secretKey = "your-secret-key";
-  let token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
-  }
-
-  try {
-    let processed_token = token.split("Bearer ")[1];
-
-    // Verify the token
-    const decoded = jwt.verify(processed_token, secretKey);
-
-    console.log(decoded);
-    // Attach the decoded payload to the request object
-    req.body.jwt_decoded = decoded;
-    console.log(req.body.jwt_decoded)
-    next();
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
-  }
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+ 
+const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+    const secretKey = 'your-secret-key';
+    const { authorization } = req.headers;
+    if (!authorization) {
+        res.status(403).json({ message: "Unauthorized - Token not provided" });
+    }
+    try {
+        const processedToken = authorization?.split('Bearer ')[1];
+        //verify the token
+        const decoded = processedToken && jwt.verify(processedToken, secretKey);
+        console.log(decoded);
+ 
+        //Attach the decoded payload to request object
+        //nammal create cheytha custom prroperty
+        req.body.jwt_decoded = decoded;
+        console.log(req.body.jwt_decoded);
+        next();
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 };
+ 
+export default verifyToken;

@@ -1,46 +1,17 @@
-import express from "express";
-import e, { Request,Response } from "express";
+import express, { Request, Response, Router } from "express";
+import sequelize from "../config/sequelize-config";
 import EcSuppliers from "../models/ec_suppliers";
-import jwt from "jsonwebtoken";
-const loginRouter = express.Router();
+import bcrypt from 'bcrypt';
+import EcCustomers from "../models/ec_customers";
+import jwt from 'jsonwebtoken';
+import loginForm from "../controllers/authentication/loginForm";
 
-loginRouter.post('/',async (req:Request, res:Response) => {
-    try {
-        let data;
-        const { client_type, e_mail, password } = req.query;
-        if (client_type == "customer") {
-            console.log("Customer Data:\n")
-        } else if (client_type == "supplier"){
-            console.log('Supplier Data:\n')
-            data = await EcSuppliers.findOne({
-                where: {e_mail: e_mail}, raw:true
-            })
-            if (data?.password === password) {
-                console.log("Login Success\n");
-                res.status(200).json("Message: Login Success")
-            } else{
-                console.log("Login Failed");
-                res.status(401).json("Message: Login Failed")
-            }
-        }
-        
-        const token = jwt.sign(
-            { userId: data?.id, client_type },
-            'your-secret-key', // Replace with your secret key
-            { expiresIn: '24h' } // Token expiration time
-          );
-    } catch (error: any) {
-        console.log(error)
-        res.status(500).json({error: error.toString()})
-    }
-})
-// loginRouter.post('/',async (req:Request, res:Response) => {
-//     try {
 
-//     } catch (error: any) {
-//         console.log(error)
-//         res.status(500).json({error: error.toString()})
-//     }
-// })
+ //importing from controllers
+const login = express.Router();
+  login.post("/", async (req: Request, res: Response) => {
+    loginForm(req,res);
+  }
+  );
 
-export default loginRouter;
+  export default login;
